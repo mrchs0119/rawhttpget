@@ -5,12 +5,15 @@ import array
 import time
 import sys
 
+
+# gets the IP of the host system
 def getSourceIP():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("cs5700f16.ccs.neu.edu", 80))
     return s.getsockname()[0]
 
 
+# checksum calculator
 def calculate_checksum(data):
     s = 0
     if len(data) % 2 != 0:
@@ -25,6 +28,7 @@ def calculate_checksum(data):
     return ~s & 0xffff
 
 
+# generated an IP header
 def createIPHeader(payload_length):
     global SRC_IP, DEST_IP, SRC_ADDR, DEST_ADDR
     ip_version = 4
@@ -48,6 +52,7 @@ def createIPHeader(payload_length):
     return ip_header
 
 
+# creates a TCP header
 def createTCPPacket(seq_no, ack_no, flags, data):
     global TCP_WINDOW, SRC_PORT, DEST_PORT, SRC_IP, DEST_IP
     urgent_pointer = 0
@@ -64,18 +69,20 @@ def createTCPPacket(seq_no, ack_no, flags, data):
     pseudo_packet = pseudo_header + tcp_dummy + bytes(data, 'utf-8')
     tcp_checksum = calculate_checksum(pseudo_packet)
     tcp_packet = pack('!HHLLBBH', SRC_PORT, DEST_PORT, seq_no, ack_no, offset_reserve, flags, window) + pack('H',
-                                                                                                        tcp_checksum) + pack(
+                                                                                                             tcp_checksum) + pack(
         '!H', urgent_pointer)
 
     return tcp_packet
 
 
+# sends a Transport layer packet to the DESTINATION IP
 def send_packet(seq, ack, flags, data):
     global DEST_IP
-    packet = createIPHeader(len(data)) + createTCPPacket(seq, ack, flags, data) + bytes(data,'utf-8')
+    packet = createIPHeader(len(data)) + createTCPPacket(seq, ack, flags, data) + bytes(data, 'utf-8')
     send_sock.sendto(packet, (DEST_IP, 0))
 
 
+# three way handshake
 def handshake():
     global seq, recv_sock, ack, TIME_OUT
     send_packet(seq, 0, 0x02, '')
@@ -111,6 +118,7 @@ def handshake():
         print("NONEE")
 
 
+# unpacks the Transport layer packet and  performs checks
 def unpack_tcp_packet(tcp_packet):
     tcp_header_values = unpack('!HHLLBBH', tcp_packet[0:16]) + \
                         unpack('H', tcp_packet[16:18]) + \
@@ -165,6 +173,7 @@ def unpack_tcp_packet(tcp_packet):
     return tcp_headers, tcp_data
 
 
+# unpacks the transport layer packet and performs checks
 def unpack_ip_packet(ip_packet):
     ip_header_values = unpack('!BBHHHBBH4s4s', ip_packet[:20])
     tcp_packet = ip_packet[20:]
@@ -196,8 +205,8 @@ def unpack_ip_packet(ip_packet):
         print("NOT TCP Protocol")
         raise ValueError
 
-
     return ip_headers, tcp_packet
+
 
 def get_host_name():
     global URL
@@ -209,6 +218,7 @@ def get_host_name():
     if index >= 0:
         domain_name = domain_name[:index]
     return domain_name
+
 
 def http_get_data():
     global URL, domain_url
@@ -223,8 +233,9 @@ def http_get_data():
     if URL[:7] == 'http://':
         get_temp = "GET "
     else:
-        get_temp = "GET HTTP://"+URL[:7]
-    return get_temp + URL + " HTTP/1.0\r\nHost: "+domain_url+"\r\nConnection: keep-alive\r\n\r\n"
+        get_temp = "GET HTTP://" + URL[:7]
+    return get_temp + URL + " HTTP/1.0\r\nHost: " + domain_url + "\r\nConnection: keep-alive\r\n\r\n"
+
 
 def fin_flag(tcp_headers):
     return tcp_headers['flags'] % 2 == 1
@@ -279,6 +290,7 @@ def download_file_helper(local_file):
         send_packet(seq + seq_addr, ack + ack_addr, 0x10, '')
     local_file.close()
 
+
 def tear_down_connection():
     global seq, ack, seq_addr, ack_addr, TIME_OUT, send_sock, recv_sock
     send_packet(seq + seq_addr, ack + ack_addr, 0x01, '')
@@ -307,6 +319,7 @@ def tear_down_connection():
     recv_sock.close()
     return
 
+
 def download_file():
     print("STARTED DOWNLOADING")
     global seq, ack, URL, seq_addr, ack_addr
@@ -325,7 +338,7 @@ def download_file():
     send_packet(seq, ack, 0x18, get_request_data)
     seq_addr += len(get_request_data)
     download_file_helper(local_file)
-    print("DOWNLOAD SUCCESSFUL TO::"+local_file_name)
+    print("DOWNLOAD SUCCESSFUL TO::" + local_file_name)
 
 
 # URL = 'http://david.choffnes.com/classes/cs4700sp17/2MB.log'
