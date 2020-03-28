@@ -139,11 +139,11 @@ def unpack_tcp_packet(tcp_packet):
     if tcp_headers['dest'] != SRC_PORT:
         print("TCP destination port != SRC_PORT!!")
         raise ValueError
-    else:
-        print('src', tcp_headers['src'])
-        print('dest', tcp_headers['dest'])
-        print('ack', tcp_headers['ack'])
-        print('flags', tcp_headers['flags'])
+    # else:
+    #     print('src', tcp_headers['src'])
+    #     print('dest', tcp_headers['dest'])
+    #     print('ack', tcp_headers['ack'])
+    #     print('flags', tcp_headers['flags'])
 
     offset = tcp_headers['off_res'] >> 4
 
@@ -195,11 +195,11 @@ def unpack_ip_packet(ip_packet):
     # print("tcp data",tcp_packet)
     if ip_headers['dest'] != SRC_ADDR:
         # print(ip_headers['dest'], SRC_ADDR)
-        print("IP packet not from SRC")
+        # print("IP packet not from SRC")
         raise ValueError
-    else:
-        print('IP packet from', socket.inet_ntoa(ip_headers['src']))
-        print('IP packet to', socket.inet_ntoa(ip_headers['dest']))
+    # else:
+    #     print('IP packet from', socket.inet_ntoa(ip_headers['src']))
+    #     print('IP packet to', socket.inet_ntoa(ip_headers['dest']))
 
     #
     if ip_headers['proto'] != SOCK_PROTOTYPE:
