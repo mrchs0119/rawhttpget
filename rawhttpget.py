@@ -137,7 +137,7 @@ def unpack_tcp_packet(tcp_packet):
 
     # print("dadadddda", tcp_headers)
     if tcp_headers['dest'] != SRC_PORT:
-        print("TCP destination port != SRC_PORT!!")
+        # print("TCP destination port != SRC_PORT!!")
         raise ValueError
     # else:
     #     print('src', tcp_headers['src'])
