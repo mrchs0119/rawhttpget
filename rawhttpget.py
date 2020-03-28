@@ -252,9 +252,8 @@ def get_body_and_headers_from_tcp_data(tcp_data):
 def download_file_helper(local_file):
     global ack, seq, seq_addr, ack_addr, TIME_OUT, cwnd, last_ack_time
     # print("vacha")
-    arrived_at_fin = False
     flag = 0
-    while not arrived_at_fin:
+    while True:
         start_time = time.time()
         now = start_time
         while now - start_time < TIME_OUT:
@@ -269,8 +268,7 @@ def download_file_helper(local_file):
         if time.time() - last_ack_time > 3 * TIME_OUT:
             tear_down_connection()
             return
-        if fin_flag(tcp_headers):
-            arrived_at_fin = True
+
         if now - start_time > TIME_OUT:
             cwnd = 1
         rec_ack = tcp_headers['ack']
@@ -289,6 +287,8 @@ def download_file_helper(local_file):
         else:
             cwnd = 1
         send_packet(seq + seq_addr, ack + ack_addr, 0x10, '')
+        if fin_flag(tcp_headers):
+            break
     local_file.close()
 
 
@@ -332,8 +332,8 @@ def download_file():
     else:
         local_file_name = local_file_name[index + 1:]
     # print("WRITING DATA TO::::", local_file_name)
-    file = open(local_file_name, 'w+')
-    file.close()
+    temp_file = open(local_file_name, 'w+')
+    temp_file.close()
     local_file = open(local_file_name, 'r+b')
     get_request_data = http_get_data()
     send_packet(seq, ack, 0x18, get_request_data)
