@@ -23,7 +23,7 @@ Code correctly handles three way handshake and teardown.
 
 if a packet is not acknowledged within 1 minute, the packet is assumed to be lost and is retransmit.
 Congestion window starts at 1, and is incremented the after receiving a successful ACK, up to a fixed maximum of 1000.
- In case of a packet drop or a timeout the congestion window is reset to 1.
+In case of a packet drop or a timeout the congestion window is reset to 1.
 
- All incoming packets are checked for valid checksums and in-order sequence numbers.
- If  data is received from the remote server for three minutes the connection is torn down.
+All incoming packets are checked for valid checksums and in-order sequence numbers.
+If  data is received from the remote server for three minutes the connection is torn down.
