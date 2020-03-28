@@ -93,7 +93,6 @@ def handshake():
     packet_sent_time = time.time()
     # return packet_sent_time
     st_time = time.time()
-    now_time = st_time
     tcp_headers = {}
     while ip_packet:
         ip_headers, ip_data = unpack_ip_packet(ip_packet)
@@ -102,7 +101,6 @@ def handshake():
         if tcp_headers['flags'] != 0x12:
             ip_packet = recv_sock.recv(65536)
             continue
-
         response_ack = tcp_headers['ack']
         # print("resp:", response_ack, seq)
         if seq + 1 == response_ack:
@@ -214,7 +212,7 @@ def get_host_name():
     domain_name = URL
     index = domain_name.find('http://')
     if index >= 0:
-        domain_name = domain_name[7:]
+        domain_name = domain_name[len('http://'):]
     index = domain_name.find('/')
     if index >= 0:
         domain_name = domain_name[:index]
@@ -231,10 +229,10 @@ def http_get_data():
     # return "GET cs5700sp20.ccs.neu.edu/accounts/login/?next=/fakebook/ HTTP/1.1\r\nHost: cs5700sp20.ccs.neu.edu/\r\n\r\n"
     # return "GET http://david.choffnes.com/ HTTP/1.0\r\nHost: david.choffnes.com\r\n\r\n"
 
-    if URL[:7] == 'http://':
+    if URL[:len('http://')] == 'http://':
         get_temp = "GET "
     else:
-        get_temp = "GET HTTP://" + URL[:7]
+        get_temp = "GET HTTP://" + URL[:len('http://')]
     return get_temp + URL + " HTTP/1.0\r\nHost: " + domain_url + "\r\nConnection: keep-alive\r\n\r\n"
 
 
@@ -252,7 +250,7 @@ def get_body_and_headers_from_tcp_data(tcp_data):
 def download_file_helper(local_file):
     global ack, seq, seq_addr, ack_addr, TIME_OUT, cwnd, last_ack_time
     # print("vacha")
-    flag = 0
+    tcp_header_and_body_flag = 0
     while True:
         start_time = time.time()
         now = start_time
@@ -277,11 +275,11 @@ def download_file_helper(local_file):
             last_ack_time = time.time()
             cwnd = min(cwnd, 999) + 1
             ack_addr += len(tcp_response)
-            if not flag:
+            if not tcp_header_and_body_flag:
                 headers, body = get_body_and_headers_from_tcp_data(tcp_response)
                 if len(body) > 0:
                     local_file.write(body)
-                    flag = 1
+                    tcp_header_and_body_flag = 1
             else:
                 local_file.write(tcp_response)
         else:
